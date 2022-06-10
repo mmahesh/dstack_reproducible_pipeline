@@ -9,6 +9,8 @@ from torchvision import transforms
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 import os 
+import wandb
+
 
 class LitAutoEncoder(pl.LightningModule):
     """
@@ -65,6 +67,11 @@ def main():
     Main function that handles all the dataset pre-processing, 
     instantiating the model  and training that model.
     """
+    # loading wandb 
+    wandb.init()
+    wandb.config.epochs = 10
+
+
     # download and pre-process the MNIST dataset
     dataset = MNIST('data', train=True, download=False,
                     transform=transforms.ToTensor())
@@ -111,7 +118,7 @@ def main():
     # trainer instance with appropriate settings
     trainer = pl.Trainer(accelerator=accelerator_name,
                          limit_train_batches=0.5,
-                         max_epochs=10,
+                         max_epochs=wandb.config.epochs,
                          logger=wandb_logger,
                          devices=num_devices,
                          strategy="ddp")
@@ -125,11 +132,16 @@ def main():
 
 
 if __name__ == '__main__':
+    
+    try:
+        run_name = os.environ['RUN_NAME']
+        
 
-    run_name = os.environ['RUN_NAME']
-
-    # wandb log results to a project
-    wandb_logger = WandbLogger(name=run_name, project="my-test-project")
+        # wandb log results to a project
+        wandb_logger = WandbLogger(name=run_name, project="my-test-project")
+    except:
+        # wandb log results to a project
+        wandb_logger = WandbLogger(project="my-test-project")
 
     # running the deep learning model now
     main()

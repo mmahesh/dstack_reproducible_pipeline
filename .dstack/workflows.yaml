@@ -1,19 +1,17 @@
 workflows:
-  - name: download
+  - name: prepare
     provider: python
-    requirements: requirements.txt
-    script: download.py
-    artifacts:
-      - data
+    script: "prepare.py"
+    requirements: "requirements.txt"
+    artifacts: ["data"]
 
-  - name: train-mnist-multi-gpu
+  - name: train
     provider: python
-    version: 3.9
-    requirements: requirements.txt
-    script: train.py
+    version: "3.9"
+    requirements: "requirements.txt"
+    script: "train.py"
     depends-on:
-      - download:latest
-    artifacts:
-      - model
+      - prepare
+    artifacts: ["model"]
     resources:
       gpu: 4
